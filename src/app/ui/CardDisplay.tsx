@@ -125,7 +125,7 @@ export default function CardDisplay({
     input.click();
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (
       !editedCard.storeName ||
       !editedCard.cardNumber ||
@@ -135,9 +135,9 @@ export default function CardDisplay({
     }
 
     if (!card.cardNumber) {
-      db.current!.addCard(editedCard as Card);
+      await db.current!.addCard(editedCard as Card);
     } else {
-      db.current!.updateCard(editedCard as Card);
+      await db.current!.updateCard(editedCard as Card);
     }
 
     setIsEditing(false);
@@ -152,10 +152,10 @@ export default function CardDisplay({
       close();
   };
 
-  const handleDeleteCard = () => {
+  const handleDeleteCard = async () => {
     if (!editedCard.cardNumber) return;
     if (window.confirm("Are you sure you want to delete this card?")) {
-      db.current!.deleteCard(editedCard.cardNumber);
+      await db.current!.deleteCard(editedCard.cardNumber);
       close();
     }
   };
@@ -194,7 +194,12 @@ export default function CardDisplay({
     if (!editedCard.cardNumber || !editedCard.codeType) return nocode;
 
     if (editedCard.codeType.toLowerCase().includes("qr"))
-      return <QRCodeSVG value={editedCard.cardNumber} />;
+      return (
+        <div className="flex flex-col justify-center items-center">
+          <QRCodeSVG value={editedCard.cardNumber} />
+          <div className="mt-4">{editedCard.cardNumber}</div>
+        </div>
+      );
 
     const codeformat = [
       "CODE39",

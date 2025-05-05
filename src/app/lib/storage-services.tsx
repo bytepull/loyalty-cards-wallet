@@ -77,6 +77,7 @@ export class StorageService {
     const store = tx.objectStore(STORE_NAME);
     await store.put(card);
     await tx.done;
+    alert("Card updated successfully");
   }
 
   public async addCard(card: Card): Promise<void> {
@@ -96,7 +97,7 @@ export class StorageService {
       await store.add(card);
       await tx.done;
       console.log("Card added successfully", card);
-      
+      alert("Card added successfully");
     }
   }
 

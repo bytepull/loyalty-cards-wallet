@@ -33,11 +33,13 @@ export default function App() {
 
   useEffect(() => {
     db.current = new StorageService();
-    getCards();
     (async function () {
       setPersistData(await navigator.storage.persisted());
-      // console.log(persistData.current);
     })();
+  });
+
+  useEffect(() => {
+    getCards();
   }, [showCard]);
 
   const getCards = async () => {
@@ -157,8 +159,8 @@ export default function App() {
           className="text-blue-500 underline"
         >
           React
-        </a>,{" "}
-        and uses IndexedDB to store your cards.
+        </a>
+        , and uses IndexedDB to store your cards.
       </p>
       <p>
         The application is open source, and you can find the source code on{" "}
