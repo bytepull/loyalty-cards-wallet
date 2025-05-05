@@ -121,7 +121,7 @@ export class StorageService {
     }
   }
 
-  public async exportCards(callbackFn: (() => void) | undefined) {
+  public async exportCards() {
     const cards = await this.getCards();
     const exportData = JSON.stringify(cards, null, 2);
     const fileName = `loyalty-cards-export-${
@@ -144,8 +144,6 @@ export class StorageService {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
-      if (callbackFn) callbackFn();
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error exporting cards:", error);

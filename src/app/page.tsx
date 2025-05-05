@@ -30,6 +30,7 @@ export default function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [persistData, setPersistData] = useState(false);
   const db = useRef<StorageService>(null);
+  const settingsMenuElement = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     db.current = new StorageService();
@@ -113,15 +114,14 @@ export default function App() {
   };
 
   const info = (
-    <div className="flex flex-col w-full h-full p-7 text-justify space-y-4">
-      <div className="mb-6 flex items-center justify-between">
-        <div className=""></div>
-        <h1 className="text-2xl font-bold">Info</h1>
+    <div className="flex flex-col w-full h-full p-7 text-center space-y-4">
+      <div className="mb-6 flex items-center justify-end">
         <button onClick={() => setShowInfo(false)}>
           <IoCloseOutline className="size-6 text-gray-600" />
         </button>
       </div>
-      <div className="flex items-center mb-4">
+      <h1 className="text-center text-2xl font-bold">Info</h1>
+      <div className="flex items-center justify-center mb-8">
         <FaCircle
           className={`mr-4 ${persistData ? "text-green-600" : "text-red-600"}`}
         />
@@ -198,6 +198,20 @@ export default function App() {
         </a>
         .
       </p>
+      <h2 className="text-center text-xl font-bold my-4">Issues</h2>
+      <p>Found a bug or have a suggestion? </p>
+      <p>
+        Please open a{" "}
+        <a
+          href={links.issue}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 underline"
+        >
+          GitHub Issue
+        </a>
+        .
+      </p>
     </div>
   );
 
@@ -212,23 +226,18 @@ export default function App() {
             type="button"
             className="mr-auto relative"
             onClick={() => {
-              document
-                .getElementById("settings-menu")!
-                .classList.toggle("hidden");
+              settingsMenuElement.current?.classList.toggle("hidden");
             }}
           >
             <CiSettings className="h-6 w-6" />
           </button>
           <div
-            id="settings-menu"
+            ref={settingsMenuElement}
             className="absolute left-0 origin-top-left z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"
             tabIndex={-1}
-            onBlur={() =>
-              document.getElementById("settings-menu")!.classList.add("hidden")
-            }
           >
             <div className="py-1" role="none">
               <button
@@ -250,9 +259,7 @@ export default function App() {
                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
                 onClick={() => {
                   handleFileImport();
-                  document
-                    .getElementById("settings-menu")!
-                    .classList.toggle("hidden");
+                  settingsMenuElement.current?.classList.toggle("hidden");
                 }}
               >
                 <p>Import</p>
@@ -264,11 +271,8 @@ export default function App() {
                 tabIndex={-1}
                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
                 onClick={() => {
-                  db.current!.exportCards(() => {
-                    document
-                      .getElementById("settings-menu")!
-                      .classList.toggle("hidden");
-                  });
+                  settingsMenuElement.current?.classList.toggle("hidden");
+                  db.current!.exportCards();
                 }}
               >
                 <p>Export</p>
@@ -284,9 +288,7 @@ export default function App() {
                 onClick={() =>
                   db.current!.clearDB(() => {
                     getCards();
-                    document
-                      .getElementById("settings-menu")!
-                      .classList.toggle("hidden");
+                    settingsMenuElement.current?.classList.toggle("hidden");
                   })
                 }
               >

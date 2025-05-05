@@ -23,9 +23,10 @@ export const metadata: Metadata = {
   },
   generator: "Next.js",
   appleWebApp: {
+    // https://nextjs.org/docs/app/api-reference/functions/generate-metadata#applewebapp
     title: "Loyalty",
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black",
     startupImage: {
       url: "/icon1.png",
       media:
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
       type: "image/ico",
       sizes: "48x48",
       rel: "icon",
-      url: "/favicon.ico"
+      url: "/favicon.ico",
     },
     // shortcut: "/favicon.ico",
     apple: {
