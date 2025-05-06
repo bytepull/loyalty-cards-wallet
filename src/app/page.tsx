@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import CardList from "@/app/ui/CardList";
 import CardDisplay from "@/app/ui/CardDisplay";
+import links from "@/app/lib/links";
+import InstallPrompt from "@/app/ui/InstallPrompt";
 import { Card, StorageService } from "@/app/lib/storage-services";
 import {
   CiCircleInfo,
@@ -17,7 +19,6 @@ import { FiPlus } from "react-icons/fi";
 import { MdOutlineSortByAlpha } from "react-icons/md";
 import { BsSortAlphaDown, BsSortAlphaUp } from "react-icons/bs";
 import { IoCloseOutline } from "react-icons/io5";
-import links from "@/app/lib/links";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const defaultSortingIcon = <MdOutlineSortByAlpha className="h-6 w-6" />;
@@ -236,142 +237,145 @@ export default function App() {
   );
 
   const main = (
-    <div className="flex flex-col w-full h-full">
-      {/* Menu bar */}
-      <nav className="flex w-full p-3 mb-6">
-        {/* Settings */}
-        {/* https://tailwindccom/plus/ui-blocks/application-ui/elements/dropdowns */}
-        <div className="mr-auto relative">
-          <button
-            type="button"
-            className="mr-auto relative"
-            onClick={() => {
-              settingsMenuElement.current?.classList.toggle("hidden");
-            }}
-          >
-            <CiSettings className="h-6 w-6" />
-          </button>
-          <div
-            ref={settingsMenuElement}
-            className="absolute left-0 origin-top-left z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
-            role="menu"
-            aria-orientation="vertical"
-            aria-labelledby="menu-button"
-            tabIndex={-1}
-          >
-            <div className="py-1" role="none">
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
-                onClick={() => setShowInfo(true)}
-              >
-                <p>Info</p>
-                <CiCircleInfo className="h-6 w-6 ml-auto" />
-              </button>
-            </div>
-            <div className="py-1" role="none">
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
-                onClick={() => {
-                  handleFileImport();
-                  settingsMenuElement.current?.classList.toggle("hidden");
-                }}
-              >
-                <p>Import</p>
-                <CiImport className="h-6 w-6 ml-auto" />
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
-                onClick={() => {
-                  settingsMenuElement.current?.classList.toggle("hidden");
-                  db.current!.exportCards();
-                }}
-              >
-                <p>Export</p>
-                <CiExport className="h-6 w-6 ml-auto" />
-              </button>
-            </div>
-            <div className="py-1" role="none">
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
-                onClick={() =>
-                  db.current!.clearDB(() => {
-                    getCards();
-                    settingsMenuElement.current?.classList.toggle("hidden");
-                  })
-                }
-              >
-                <p>Delete All Cards</p>
-                <CiTrash className="h-6 w-6 ml-auto" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sort */}
-        <button onClick={sortCards}>{sortingIcon}</button>
-
-        {/* Add cards */}
-        <div className="ml-6" onClick={() => setShowCard({})}>
-          <FiPlus className="h-6 w-6" />
-        </div>
-      </nav>
-
-      {/* Title */}
-      <h1 className="text-2xl font-bold text-center mb-6">
-        Simple Loyalty Cards Wallet
-      </h1>
-
-      {/* Search bar */}
-      <div className="w-full mb-6">
-        <div className="relative w-full px-4">
-          <div className="relative">
-            <input
-              ref={serchBarElement}
-              type="text"
-              className="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 bg-slate-100 text-gray-600 placeholder:text-gray-600"
-              placeholder="Search cards..."
-              onChange={(e) => searchCards(e.target.value)}
-              value={searchQuery}
-            />
+    <>
+      <InstallPrompt />
+      <div className="flex flex-col w-full h-full">
+        {/* Menu bar */}
+        <nav className="flex w-full p-3 mb-6">
+          {/* Settings */}
+          {/* https://tailwindccom/plus/ui-blocks/application-ui/elements/dropdowns */}
+          <div className="mr-auto relative">
             <button
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              type="button"
+              className="mr-auto relative"
               onClick={() => {
-                if (searchQuery.length > 0) searchCards("");
+                settingsMenuElement.current?.classList.toggle("hidden");
               }}
             >
-              {searchQuery.length > 0 ? (
-                <IoCloseOutline className="h-5 w-5 text-gray-600" />
-              ) : (
-                <CiSearch className="h-5 w-5 text-gray-600" />
-              )}
+              <CiSettings className="h-6 w-6" />
             </button>
+            <div
+              ref={settingsMenuElement}
+              className="absolute left-0 origin-top-left z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="menu-button"
+              tabIndex={-1}
+            >
+              <div className="py-1" role="none">
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabIndex={-1}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  onClick={() => setShowInfo(true)}
+                >
+                  <p>Info</p>
+                  <CiCircleInfo className="h-6 w-6 ml-auto" />
+                </button>
+              </div>
+              <div className="py-1" role="none">
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabIndex={-1}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  onClick={() => {
+                    handleFileImport();
+                    settingsMenuElement.current?.classList.toggle("hidden");
+                  }}
+                >
+                  <p>Import</p>
+                  <CiImport className="h-6 w-6 ml-auto" />
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabIndex={-1}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  onClick={() => {
+                    settingsMenuElement.current?.classList.toggle("hidden");
+                    db.current!.exportCards();
+                  }}
+                >
+                  <p>Export</p>
+                  <CiExport className="h-6 w-6 ml-auto" />
+                </button>
+              </div>
+              <div className="py-1" role="none">
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabIndex={-1}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  onClick={() =>
+                    db.current!.clearDB(() => {
+                      getCards();
+                      settingsMenuElement.current?.classList.toggle("hidden");
+                    })
+                  }
+                >
+                  <p>Delete All Cards</p>
+                  <CiTrash className="h-6 w-6 ml-auto" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort */}
+          <button onClick={sortCards}>{sortingIcon}</button>
+
+          {/* Add cards */}
+          <div className="ml-6" onClick={() => setShowCard({})}>
+            <FiPlus className="h-6 w-6" />
+          </div>
+        </nav>
+
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Simple Loyalty Cards Wallet
+        </h1>
+
+        {/* Search bar */}
+        <div className="w-full mb-6">
+          <div className="relative w-full px-4">
+            <div className="relative">
+              <input
+                ref={serchBarElement}
+                type="text"
+                className="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 bg-slate-100 text-gray-600 placeholder:text-gray-600"
+                placeholder="Search cards..."
+                onChange={(e) => searchCards(e.target.value)}
+                value={searchQuery}
+              />
+              <button
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                onClick={() => {
+                  if (searchQuery.length > 0) searchCards("");
+                }}
+              >
+                {searchQuery.length > 0 ? (
+                  <IoCloseOutline className="h-5 w-5 text-gray-600" />
+                ) : (
+                  <CiSearch className="h-5 w-5 text-gray-600" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
+        {/* Cards */}
+        <div className="text-center italic text-slate-400">
+          {cards.length} cards
+        </div>
+        <div className="flex-1 overflow-auto m-4">
+          {isLoading ? (
+            loading
+          ) : (
+            <CardList cards={cards} showCard={setShowCard} />
+          )}
+        </div>
       </div>
-      {/* Cards */}
-      <div className="text-center italic text-slate-400">
-        {cards.length} cards
-      </div>
-      <div className="flex-1 overflow-auto m-4">
-        {isLoading ? (
-          loading
-        ) : (
-          <CardList cards={cards} showCard={setShowCard} />
-        )}
-      </div>
-    </div>
+    </>
   );
 
   if (showInfo) return info;
