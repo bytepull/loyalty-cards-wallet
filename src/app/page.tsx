@@ -256,7 +256,7 @@ export default function App() {
             </button>
             <div
               ref={settingsMenuElement}
-              className="absolute left-0 origin-top-left z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
+              className="absolute left-0 origin-top-left z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-(--background) dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="menu-button"
@@ -267,7 +267,7 @@ export default function App() {
                   type="button"
                   role="menuitem"
                   tabIndex={-1}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  className="flex items-center w-full px-4 py-2 text-sm not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
                   onClick={() => setShowInfo(true)}
                 >
                   <p>Info</p>
@@ -279,7 +279,7 @@ export default function App() {
                   type="button"
                   role="menuitem"
                   tabIndex={-1}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  className="flex items-center w-full px-4 py-2 text-sm not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
                   onClick={() => {
                     handleFileImport();
                     settingsMenuElement.current?.classList.toggle("hidden");
@@ -292,7 +292,7 @@ export default function App() {
                   type="button"
                   role="menuitem"
                   tabIndex={-1}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  className="flex items-center w-full px-4 py-2 text-sm not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
                   onClick={() => {
                     settingsMenuElement.current?.classList.toggle("hidden");
                     db.current!.exportCards();
@@ -307,7 +307,7 @@ export default function App() {
                   type="button"
                   role="menuitem"
                   tabIndex={-1}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                  className="flex items-center w-full px-4 py-2 text-sm not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
                   onClick={() =>
                     db.current!.clearDB(() => {
                       getCards();

@@ -147,7 +147,9 @@ export default function CardDisplay({
     }
   };
 
-  const nocode = <div className="text-center text-gray-400">No code</div>;
+  const nocode = (
+    <div className="text-center not-dark:text-gray-400">No code</div>
+  );
 
   const code = () => {
     // If card number is not provided, return no code
@@ -292,7 +294,7 @@ export default function CardDisplay({
       <div className="flex justify-center items-center mb-6 border-b border-slate-200 ">
         <input
           type="text"
-          className="text-center outline-none italic text-gray-400 px-2 py-1"
+          className="text-center outline-none italic not-dark:text-gray-400 px-2 py-1"
           value={editedCard.cardNumber}
           onChange={(e) => handleInputChange("cardNumber", e.target.value)}
           placeholder="Card Number"
@@ -307,7 +309,7 @@ export default function CardDisplay({
               <AiOutlineLoading3Quarters className="h-6 w-6 text-gray-500 animate-spin" />
             ) : (
               // <CiCirclePlus className="h-6 w-6 text-gray-500" />
-              <CiCamera className="h-6 w-6 text-gray-500" />
+              <CiCamera className="h-6 w-6 not-dark:text-gray-500" />
             )}
           </button>
           <div
@@ -324,7 +326,7 @@ export default function CardDisplay({
                 type="button"
                 role="menuitem"
                 tabIndex={-1}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                className="flex items-center w-full px-4 py-2 text-sm not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
                 onClick={() => {
                   scanMenu.current?.classList.add("hidden");
                   openPhotoLibrary();
@@ -337,7 +339,7 @@ export default function CardDisplay({
                 type="button"
                 role="menuitem"
                 tabIndex={-1}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
+                className="flex items-center w-full px-4 py-2 text-sm not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
                 onClick={() => setShowScan(true)}
               >
                 <p>Scan with Camera</p>
@@ -347,7 +349,7 @@ export default function CardDisplay({
           </div>
         </div>
       </div>
-      <div className="flex justify-center items-center rounded-4xl bg-gray-200 px-4 py-2">
+      <div className="flex justify-center items-center rounded-4xl not-dark:bg-gray-200 dark:bg-gray-600 px-4 py-2">
         <select
           className="text-center outline-none"
           value={editedCard.codeType}
@@ -373,14 +375,14 @@ export default function CardDisplay({
       <div className="flex justify-between items-center">
         {/* Close Button */}
         <button onClick={handleClose}>
-          <IoCloseOutline className="size-6 text-gray-600" />
+          <IoCloseOutline className="size-6 not-dark:text-gray-600" />
         </button>
         {/* Edit / Confirm button */}
         <button onClick={isEditing ? handleSave : () => setIsEditing(true)}>
           {isEditing ? (
-            <IoCheckmark className="h-5 w-5 text-gray-600" />
+            <IoCheckmark className="h-5 w-5 not-dark:text-gray-600" />
           ) : (
-            <FiEdit3 className="h-5 w-5 text-gray-600" />
+            <FiEdit3 className="h-5 w-5 not-dark:text-gray-600" />
           )}
         </button>
       </div>
@@ -391,8 +393,8 @@ export default function CardDisplay({
           type="text"
           className={`text-xl font-semibold text-center outline-none capitalize ${
             isEditing
-              ? "border-b border-slate-200 italic text-gray-400"
-              : "text-gray-800"
+              ? "border-b not-dark:border-slate-200 italic not-dark:text-gray-400"
+              : "not-dark:text-gray-800"
           }`}
           value={editedCard.storeName}
           onChange={(e) => handleInputChange("storeName", e.target.value)}
@@ -409,7 +411,7 @@ export default function CardDisplay({
           className="rounded-4xl p-4 mt-14 bg-red-300"
           disabled={!card.hasOwnProperty("cardNumber")}
         >
-          <CiTrash className="size-6 text-gray-800" />
+          <CiTrash className="size-6 not-dark:text-gray-800 dark:text-black" />
         </button>
       </div>
 
@@ -419,8 +421,8 @@ export default function CardDisplay({
           type="text"
           className={`text-center outline-none ${
             isEditing
-              ? "border-b border-slate-200 italic text-gray-400"
-              : "text-gray-600"
+              ? "border-b not-dark:border-slate-200 italic not-dark:text-gray-400"
+              : "not-dark:text-gray-600"
           }`}
           value={editedCard.notes}
           onChange={(e) => handleInputChange("notes", e.target.value)}
