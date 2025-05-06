@@ -7,7 +7,7 @@ import Scanner from "@/app/ui/Scanner";
 import { QRCodeSVG } from "qrcode.react";
 import { IoCheckmark, IoCloseOutline } from "react-icons/io5";
 import { FiEdit3 } from "react-icons/fi";
-import { CiBarcode, CiCirclePlus, CiImageOn, CiTrash } from "react-icons/ci";
+import { CiBarcode, CiCamera, CiImageOn, CiTrash } from "react-icons/ci";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 
@@ -306,7 +306,8 @@ export default function CardDisplay({
             {isLoading ? (
               <AiOutlineLoading3Quarters className="h-6 w-6 text-gray-500 animate-spin" />
             ) : (
-              <CiCirclePlus className="h-6 w-6 text-gray-500" />
+              // <CiCirclePlus className="h-6 w-6 text-gray-500" />
+              <CiCamera className="h-6 w-6 text-gray-500" />
             )}
           </button>
           <div
