@@ -18,6 +18,7 @@ import { MdOutlineSortByAlpha } from "react-icons/md";
 import { BsSortAlphaDown, BsSortAlphaUp } from "react-icons/bs";
 import { IoCloseOutline } from "react-icons/io5";
 import links from "@/app/lib/links";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const defaultSortingIcon = <MdOutlineSortByAlpha className="h-6 w-6" />;
 
@@ -30,6 +31,7 @@ export default function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [persistData, setPersistData] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const settingsMenuElement = useRef<HTMLDivElement>(null);
   const serchBarElement = useRef<HTMLInputElement>(null);
   const db = useRef<StorageService>(null);
@@ -49,6 +51,7 @@ export default function App() {
     const cards: Array<Card> = await db.current!.getCards();
     setCards(cards);
     setBkCards(cards);
+    setIsLoading(false);
     console.log(cards);
   };
 
@@ -123,6 +126,12 @@ export default function App() {
     );
     setCards(filteredCards);
   };
+
+  const loading = (
+    <div className="flex w-full h-full items-center justify-center">
+      <AiOutlineLoading3Quarters className="h-28 w-28 text-gray-500 animate-spin" />
+    </div>
+  );
 
   const info = (
     <div className="flex flex-col w-full h-full p-7 text-center space-y-4">
@@ -356,7 +365,11 @@ export default function App() {
         {cards.length} cards
       </div>
       <div className="flex-1 overflow-auto m-4">
-        <CardList cards={cards} showCard={setShowCard} />
+        {isLoading ? (
+          loading
+        ) : (
+          <CardList cards={cards} showCard={setShowCard} />
+        )}
       </div>
     </div>
   );
