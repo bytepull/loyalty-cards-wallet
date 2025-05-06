@@ -155,106 +155,61 @@ export class StorageService {
     }
   }
 
-  public async importCards(file: Blob, callbackFn: (() => void) | undefined) {
-    try {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const importedCards = JSON.parse(e.target?.result as string);
+  public async importCards(file: Blob): Promise<Array<Card>> {
+    return new Promise<Array<Card>>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const importedCards = JSON.parse(e.target?.result as string);
 
-            // Validate that the imported data is an array
-            if (!Array.isArray(importedCards)) {
-              throw new Error(
-                "Invalid import file format. Expected an array of cards."
-              );
-            }
-
-            console.log("Imported cards:", importedCards);
-
-            // Validate each card has required properties
-            importedCards.forEach((card) => {
-              if (
-                !card.hasOwnProperty("storeName") ||
-                !card.storeName ||
-                !card.hasOwnProperty("cardNumber") ||
-                !card.cardNumber
-              ) {
-                throw new Error(
-                  "Invalid card data. Each card must have a number and a store name."
-                );
-              }
-            });
-
-            // Check if there are existing cards
-            const existingCards = await this.getCards();
-            if (existingCards.length > 0) {
-              // Ask user whether to merge or replace
-              const userChoice = window.confirm(
-                "You already have cards stored. Would you like to merge the imported cards with existing ones? Click 'OK' to merge, or 'Cancel' to replace all existing cards."
-              );
-
-              if (userChoice) {
-                // Merge: Add new cards while keeping existing ones
-                // Create a Set of existing IDs for faster lookup
-                const existingIds = new Set(
-                  existingCards.map((card) => card.id)
-                );
-                // Filter out duplicates and add new cards
-                const newCards = importedCards.filter(
-                  (card) => !existingIds.has(card.id)
-                );
-                const mergedCards = [...existingCards, ...newCards];
-                await this.saveCards(mergedCards);
-                window.alert(
-                  `Cards merged successfully! Added ${newCards.length} new cards.`
-                );
-              } else {
-                // Replace: Overwrite all existing cards
-                await this.saveCards(importedCards);
-                window.alert(
-                  `All cards replaced! New total: ${importedCards.length} cards.`
-                );
-              }
-            } else {
-              // No existing cards, just import
-              await this.saveCards(importedCards);
-              window.alert(
-                `Cards imported successfully! Total: ${importedCards.length} cards.`
-              );
-            }
-
-            if (callbackFn) callbackFn();
-            resolve(importedCards);
-          } catch (error) {
-            if (error instanceof Error) {
-              console.error("Error importing cards:", error);
-              window.alert("Failed to import cards: " + error.message);
-            } else {
-              console.error("Unknown error importing cards:", error);
-              window.alert("Failed to import cards");
-            }
-            reject(error);
+          // Validate that the imported data is an array
+          if (!Array.isArray(importedCards)) {
+            throw new Error(
+              "Invalid import file format. Expected an array of cards."
+            );
           }
-        };
 
-        reader.onerror = () => {
-          const error = new Error("Error reading file");
-          window.alert("Failed to read import file");
+          console.log("Imported cards:", importedCards);
+
+          // Validate each card has required properties
+          importedCards.forEach((card) => {
+            if (
+              !card.hasOwnProperty("storeName") ||
+              !card.storeName ||
+              !card.hasOwnProperty("cardNumber") ||
+              !card.cardNumber
+            ) {
+              throw new Error(
+                "Invalid card data. Each card must have a number and a store name."
+              );
+            }
+          });
+
+          // No existing cards, just import
+          await this.saveCards(importedCards);
+          window.alert(
+            `Cards imported successfully! Total: ${importedCards.length} cards.`
+          );
+          resolve(importedCards);
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("Error importing cards:", error);
+            window.alert("Failed to import cards: " + error.message);
+          } else {
+            console.error("Unknown error importing cards:", error);
+            window.alert("Failed to import cards");
+          }
           reject(error);
-        };
+        }
+      };
 
-        reader.readAsText(file);
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error importing cards:", error);
-        window.alert("Failed to import cards: " + error.message);
-      } else {
-        console.error("Unknown error importing cards:", error);
-        window.alert("Failed to import cards");
-      }
-      throw error;
-    }
+      reader.onerror = () => {
+        const error = new Error("Error reading file");
+        window.alert("Failed to read import file");
+        reject(error);
+      };
+
+      reader.readAsText(file);
+    });
   }
 }

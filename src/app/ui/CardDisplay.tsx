@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, StorageService } from "@/app/lib/storage-services";
 import Barcode from "react-barcode";
+import Scanner from "@/app/ui/Scanner";
 import { QRCodeSVG } from "qrcode.react";
 import { IoCheckmark, IoCloseOutline } from "react-icons/io5";
 import { FiEdit3 } from "react-icons/fi";
@@ -42,45 +43,10 @@ export default function CardDisplay({
     html5QrCode.current = new Html5Qrcode("scan-element", true);
   }, []);
 
-  const handleBarcodeScanner = () => {
-    setShowScan(true);
-    html5QrCode
-      .current!.start(
-        { facingMode: "environment" },
-        {
-          fps: 10, // Optional, frame per seconds for qr code scanning
-          qrbox: { width: 200, height: 200 }, // Optional, if you want bounded box UI
-        },
-        (decodedText, result) => {
-          console.log(`Code matched = ${decodedText}`, result);
-          handleInputChange("cardNumber", decodedText);
-          handleInputChange("codeType", result.result.format!.formatName);
-          try {
-            html5QrCode.current?.stop();
-            console.log("Camera stopped.");
-          } catch (error) {
-            console.log("Error stopping camera:", error);
-          } finally {
-            setShowScan(false);
-          }
-        },
-        (errorMessage, error) => {
-          if (error.type === 0) return; // Ignore NotFoundException
-          console.warn(`Code scan error = ${errorMessage}`, error);
-        }
-      )
-      .catch((error) => {
-        console.log("Error starting camera:", error);
-        if (error.type === "NotAllowedError") {
-          alert(
-            "Camera permission is required to use the barcode scanner. Please allow camera access and try again."
-          );
-        } else {
-          alert(
-            "Unable to start camera. Please check permissions and try again."
-          );
-        }
-      })
+  const handleScannerResult = (decodedText: string, format: string) => {
+    handleInputChange("cardNumber", decodedText);
+    handleInputChange("codeType", format);
+    setShowScan(false);
   };
 
   async function openPhotoLibrary() {
@@ -179,12 +145,6 @@ export default function CardDisplay({
       scanMenu.current!.classList.remove("right-0");
       scanMenu.current!.classList.add("left-0");
     }
-  };
-
-  const handleCloseScan = () => {
-    html5QrCode.current?.stop();
-    setShowScan(false);
-    setIsLoading(false);
   };
 
   const nocode = <div className="text-center text-gray-400">No code</div>;
@@ -329,17 +289,17 @@ export default function CardDisplay({
 
   const editCode = (
     <div className="flex flex-col items-center">
-      <div className="flex justify-center items-center mb-6">
+      <div className="flex justify-center items-center mb-6 border-b border-slate-200 ">
         <input
           type="text"
-          className="text-center outline-none border-b border-slate-200 italic text-gray-400 px-2 py-1"
+          className="text-center outline-none italic text-gray-400 px-2 py-1"
           value={editedCard.cardNumber}
           onChange={(e) => handleInputChange("cardNumber", e.target.value)}
           placeholder="Card Number"
         />
         <div className="relative">
           <button
-            className="border-b border-slate-200 p-1 hover:bg-slate-50 transition-colors relative"
+            className=" p-1 hover:bg-slate-50 transition-colors relative"
             onClick={handleScanOptions}
             disabled={isLoading}
           >
@@ -377,7 +337,7 @@ export default function CardDisplay({
                 role="menuitem"
                 tabIndex={-1}
                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-slate-200 hover:text-gray-900"
-                onClick={handleBarcodeScanner}
+                onClick={() => setShowScan(true)}
               >
                 <p>Scan with Camera</p>
                 <CiBarcode className="h-6 w-6 ml-auto" />
@@ -386,7 +346,7 @@ export default function CardDisplay({
           </div>
         </div>
       </div>
-      <div className="flex justify-center items-center">
+      <div className="flex justify-center items-center rounded-4xl bg-gray-200 px-4 py-2">
         <select
           className="text-center outline-none"
           value={editedCard.codeType}
@@ -405,78 +365,69 @@ export default function CardDisplay({
     </div>
   );
 
+  if (showScan) return <Scanner close={handleScannerResult} />;
+
   return (
-    <>
-      <div className={showScan ? "hidden" : "flex flex-col w-full h-screen"}>
-        <div className="flex flex-col h-full w-full p-6">
-          <div className="flex justify-between items-center">
-            {/* Close Button */}
-            <button onClick={handleClose}>
-              <IoCloseOutline className="size-6 text-gray-600" />
-            </button>
-            {/* Store Name */}
-            <input
-              type="text"
-              className={`text-xl font-semibold text-center outline-none capitalize ${
-                isEditing
-                  ? "border-b border-slate-200 italic text-gray-400"
-                  : "text-gray-800"
-              }`}
-              value={editedCard.storeName}
-              onChange={(e) => handleInputChange("storeName", e.target.value)}
-              placeholder="Store Name"
-              readOnly={!isEditing}
-            />
-            {/* Edit / Confirm button */}
-            <button onClick={isEditing ? handleSave : () => setIsEditing(true)}>
-              {isEditing ? (
-                <IoCheckmark className="h-5 w-5 text-gray-600" />
-              ) : (
-                <FiEdit3 className="h-5 w-5 text-gray-600" />
-              )}
-            </button>
-          </div>
-
-          {/* Barcode */}
-          <div className="flex flex-col flex-1 justify-center items-center">
-            {isEditing ? editCode : code()}
-            <button
-              onClick={handleDeleteCard}
-              className="rounded-4xl p-4 mt-14 bg-red-300"
-              disabled={!card.hasOwnProperty("cardNumber")}
-            >
-              <CiTrash className="size-6 text-gray-800" />
-            </button>
-          </div>
-
-          {/* Notes */}
-          <div className="flex justify-center items-center">
-            <input
-              type="text"
-              className={`text-center outline-none ${
-                isEditing
-                  ? "border-b border-slate-200 italic text-gray-400"
-                  : "text-gray-600"
-              }`}
-              value={editedCard.notes}
-              onChange={(e) => handleInputChange("notes", e.target.value)}
-              readOnly={!isEditing}
-              placeholder="Notes"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Scanner */}
-      <div className="flex flex-col w-full h-full justify-center items-center p-6" style={{visibility: showScan ? "visible" : "hidden"}}>
-        <div id="scan-element" className="w-full h-[600px] flex"></div>
-        <button
-          onClick={handleCloseScan}
-          className="rounded-4xl p-4 mt-5 bg-gray-300"
-        >
+    <div className="flex flex-col h-full w-full p-6">
+      <div className="flex justify-between items-center">
+        {/* Close Button */}
+        <button onClick={handleClose}>
           <IoCloseOutline className="size-6 text-gray-600" />
         </button>
+        {/* Edit / Confirm button */}
+        <button onClick={isEditing ? handleSave : () => setIsEditing(true)}>
+          {isEditing ? (
+            <IoCheckmark className="h-5 w-5 text-gray-600" />
+          ) : (
+            <FiEdit3 className="h-5 w-5 text-gray-600" />
+          )}
+        </button>
       </div>
-    </>
+
+      {/* Store Name */}
+      <div className="flex justify-center items-center mt-12">
+        <input
+          type="text"
+          className={`text-xl font-semibold text-center outline-none capitalize ${
+            isEditing
+              ? "border-b border-slate-200 italic text-gray-400"
+              : "text-gray-800"
+          }`}
+          value={editedCard.storeName}
+          onChange={(e) => handleInputChange("storeName", e.target.value)}
+          placeholder="Store Name"
+          readOnly={!isEditing}
+        />
+      </div>
+
+      {/* Barcode */}
+      <div className="flex flex-col flex-1 justify-center items-center">
+        {isEditing ? editCode : code()}
+        <button
+          onClick={handleDeleteCard}
+          className="rounded-4xl p-4 mt-14 bg-red-300"
+          disabled={!card.hasOwnProperty("cardNumber")}
+        >
+          <CiTrash className="size-6 text-gray-800" />
+        </button>
+      </div>
+
+      {/* Notes */}
+      <div className="flex justify-center items-center mb-12">
+        <input
+          type="text"
+          className={`text-center outline-none ${
+            isEditing
+              ? "border-b border-slate-200 italic text-gray-400"
+              : "text-gray-600"
+          }`}
+          value={editedCard.notes}
+          onChange={(e) => handleInputChange("notes", e.target.value)}
+          readOnly={!isEditing}
+          placeholder="Notes"
+        />
+      </div>
+      <div id="scan-element" className="hidden"></div>
+    </div>
   );
 }

@@ -29,8 +29,10 @@ export default function App() {
   const [sortingIcon, setSortingIcon] = useState(defaultSortingIcon);
   const [showInfo, setShowInfo] = useState(false);
   const [persistData, setPersistData] = useState(false);
-  const db = useRef<StorageService>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const settingsMenuElement = useRef<HTMLDivElement>(null);
+  const serchBarElement = useRef<HTMLInputElement>(null);
+  const db = useRef<StorageService>(null);
 
   useEffect(() => {
     db.current = new StorageService();
@@ -51,6 +53,15 @@ export default function App() {
   };
 
   const handleFileImport = async () => {
+    if (cards.length > 0) {
+      if (
+        !window.confirm(
+          "There are cards stored already. Would you like to replace the existing ones?"
+        )
+      ) {
+        return;
+      }
+    }
     // Create file input element
     const input = document.createElement("input");
     input.type = "file";
@@ -63,14 +74,9 @@ export default function App() {
     input.onchange = async (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        try {
-          db.current!.importCards(file, () => {
-            getCards();
-          });
-        } catch (error) {
-          console.error("Import failed:", error);
-          alert("Failed to import cards. Please check the file format.");
-        }
+        db.current!.importCards(file).then(() => {
+          getCards();
+        });
       }
     };
   };
@@ -107,6 +113,11 @@ export default function App() {
   };
 
   const searchCards = (query: string) => {
+    setSearchQuery(query);
+    if (query.length === 0) {
+      setCards(bkCards);
+      return;
+    }
     const filteredCards = bkCards.filter((card: Card) =>
       card.storeName.toLowerCase().includes(query.toLowerCase())
     );
@@ -318,19 +329,33 @@ export default function App() {
         <div className="relative w-full px-4">
           <div className="relative">
             <input
+              ref={serchBarElement}
               type="text"
-              className="w-full pl-4 pr-10 py-2 border rounded-lg focus:outline-none focus:border-blue-500 bg-gray-200 text-gray-600 placeholder:text-gray-600"
+              className="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 bg-slate-100 text-gray-600 placeholder:text-gray-600"
               placeholder="Search cards..."
               onChange={(e) => searchCards(e.target.value)}
+              value={searchQuery}
             />
-            <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <CiSearch className="h-5 w-5 text-gray-600" />
+            <button
+              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              onClick={() => {
+                if (searchQuery.length > 0) searchCards("");
+              }}
+            >
+              {searchQuery.length > 0 ? (
+                <IoCloseOutline className="h-5 w-5 text-gray-600" />
+              ) : (
+                <CiSearch className="h-5 w-5 text-gray-600" />
+              )}
             </button>
           </div>
         </div>
       </div>
       {/* Cards */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="text-center italic text-slate-400">
+        {cards.length} cards
+      </div>
+      <div className="flex-1 overflow-auto m-4">
         <CardList cards={cards} showCard={setShowCard} />
       </div>
     </div>
