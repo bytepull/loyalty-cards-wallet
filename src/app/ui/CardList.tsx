@@ -13,10 +13,10 @@ export default function CardList({
   if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-2xl font-semibold not-dark:text-gray-800 mb-4">
           No cards found
         </h2>
-        <p className="text-gray-600">Add a new card to get started</p>
+        <p className="not-dark:text-gray-600">Add a new card to get started</p>
       </div>
     );
   }

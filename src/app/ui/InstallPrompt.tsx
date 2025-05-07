@@ -83,7 +83,7 @@ function InstallPrompt() {
         {messageForDevice}
         <div className="w-full px-14 mt-4">
           <button
-            className="rounded-xl p-3 w-full"
+            className="rounded-xl p-3 w-full bg-gray-200 dark:bg-gray-700"
             onClick={handleConfirmation}
           >
             OK

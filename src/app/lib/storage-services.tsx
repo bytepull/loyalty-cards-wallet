@@ -1,23 +1,94 @@
-import { openDB } from "idb";
+import { openDB, IDBPDatabase, DBSchema } from "idb";
 
 const DB_NAME = "loyalty_cards_db";
 const STORE_NAME = "cards";
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Increment the version number
 
-export type Card = {
+export interface Card {
   [index: string]: number | string | undefined;
+  id?: string;
   storeName: string;
   cardNumber: string;
   codeType: string;
   notes?: string;
+}
+
+interface MyDatabase extends DBSchema {
+  cards: {
+    key: "id";
+    autoIncrement: true;
+    value: Card;
+    indexes: {
+      id: string;
+      cardNumber: string;
+      storeName: string;
+    };
+  };
+}
+
+const storeParams = {
+  keyPath: "id",
+  autoIncrement: true,
 };
 
 export class StorageService {
-  private readonly db;
+  private db: Promise<IDBPDatabase<MyDatabase>>;
 
   public constructor() {
     this.db = this.initDB();
     this.persistData();
+  }
+
+  private createStore(db: IDBPDatabase<MyDatabase>) {
+    console.log("Creating store...");
+    const store = db.createObjectStore(STORE_NAME, storeParams);
+    console.log("Creating indexes...");
+    store.createIndex("id", "id", { unique: true });
+    store.createIndex("cardNumber", "cardNumber");
+    store.createIndex("storeName", "storeName");
+    return store;
+  }
+
+  private async initDB(): Promise<IDBPDatabase<MyDatabase>> {
+    const db = await openDB<MyDatabase>(DB_NAME, DB_VERSION, {
+      async upgrade(db, oldVersion, newVersion, transaction) {
+        if (oldVersion < 1 || !db.objectStoreNames.contains(STORE_NAME)) {
+          // Create initial store if it doesn't exist
+          console.log("Creating store...");
+          const store = db.createObjectStore(STORE_NAME, storeParams);
+          console.log("Creating indexes...");
+          store.createIndex("id", "id", { unique: true });
+          store.createIndex("cardNumber", "cardNumber");
+          store.createIndex("storeName", "storeName");
+        } else {
+          console.log("Upgrading database...");
+          // Handle upgrade logic
+          console.log(`Store ${STORE_NAME} already exists. Upgrading...`);
+          console.log("Saving data...");
+          const data = await transaction.objectStore(STORE_NAME).getAll();
+          console.log("Data saved successfully", data);
+          console.log("Deleting existing store...");
+          db.deleteObjectStore(STORE_NAME);
+          console.log("Creating new store...");
+          const newStore = db.createObjectStore(STORE_NAME, storeParams);
+          console.log("Creating indexes...");
+          newStore.createIndex("id", "id", { unique: true });
+          newStore.createIndex("cardNumber", "cardNumber");
+          newStore.createIndex("storeName", "storeName");
+          console.log("Adding data back...");
+          for (const item of data) {
+            await newStore.add(item);
+          }
+          console.log("Data saved successfully");
+        }
+      },
+      blocked() {
+        console.log("Please close all other tabs with this site open!");
+        alert("Please close all other tabs with this site open!");
+      },
+    });
+
+    return db;
   }
 
   private async persistData() {
@@ -25,21 +96,6 @@ export class StorageService {
       const result = await navigator.storage.persist();
       console.log(`Data persisted: ${result}`);
     }
-  }
-
-  private async initDB() {
-    return await openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        // Create the object store if it doesn't exist
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, {
-            keyPath: "cardNumber",
-          });
-          // Create indexes for faster querying
-          store.createIndex("storeName", "storeName");
-        }
-      },
-    });
   }
 
   public async getCards(): Promise<Array<Card>> {
@@ -50,14 +106,21 @@ export class StorageService {
   }
 
   public async getCardByNumber(cardNumber: string): Promise<Card | undefined> {
-    const tx = (await this.db).transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const card = await store.get(cardNumber);
+    const db = await this.db;
+    const card = await db.getFromIndex(STORE_NAME, "cardNumber", cardNumber);
+    return card;
+  }
+
+  public async getCardById(id: string): Promise<Card | undefined> {
+    const db = await this.db;
+    const card = db.getFromIndex(STORE_NAME, "id", id);
+    console.log("card", card);
     return card;
   }
 
   public async saveCards(cards: Array<Card>): Promise<void> {
-    const tx = (await this.db).transaction(STORE_NAME, "readwrite");
+    const db = await this.db;
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
 
     // Clear existing cards
@@ -65,57 +128,36 @@ export class StorageService {
 
     // Add all new cards
     for (const card of cards) {
+      console.log(card);
       await store.add(card);
     }
-
     await tx.done;
   }
 
   /* Add or update a card onto the DB */
-  public async updateCard(card: Card): Promise<void> {
-    const tx = (await this.db).transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    await store.put(card);
-    await tx.done;
+  public async setCard(card: Card): Promise<void> {
+    await (await this.db).put(STORE_NAME, card);
+    console.log("Card updated successfully", card);
     alert("Card updated successfully");
   }
 
-  public async addCard(card: Card): Promise<void> {
-    if (card.cardNumber === "") {
-      alert("Card number cannot be empty");
-      console.error("Card number cannot be empty", card);
-      return;
-    }
-    // Ensure unique ID
-    if (await this.getCardByNumber(card.cardNumber)) {
-      alert(
-        `Card with number ${card.cardNumber} already exists. Please choose or scan a different number.`
-      );
-    } else {
-      const tx = (await this.db).transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      await store.add(card);
-      await tx.done;
-      console.log("Card added successfully", card);
-      alert("Card added successfully");
-    }
-  }
-
   /* Delete card from DB */
-  public async deleteCard(cardNumber: string): Promise<void> {
-    const tx = (await this.db).transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    await store.delete(cardNumber);
-    await tx.done;
+  public async deleteCard(card: Card): Promise<void> {
+    console.log("deleteCard(card)", card);
+    if (!card.id) {
+      throw new Error("Card ID cannot be empty"); // Throw an error if card ID is empty
+    }
+    const db = await this.db;
+    await db.delete(STORE_NAME, card.id as "id");
   }
 
   public async clearDB(callbackFn?: () => void) {
-    if (window.confirm("Are you sure you want to clear all cards?")) {
-      const tx = (await this.db).transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      await store.clear();
-      await tx.done;
-
+    const confirmClear = window.confirm(
+      "Are you sure you want to clear all cards?"
+    );
+    if (confirmClear) {
+      const db = await this.db;
+      await db.clear(STORE_NAME);
       window.alert("All cards have been cleared");
       if (callbackFn) callbackFn();
     }

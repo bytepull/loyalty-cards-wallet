@@ -11,12 +11,14 @@ import { CiBarcode, CiCamera, CiImageOn, CiTrash } from "react-icons/ci";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 
-const cardTemplate: Card = {
-  storeName: "",
-  cardNumber: "",
-  codeType: "",
-  notes: "",
-};
+function generateCardObject(): Card {
+  return {
+    storeName: "",
+    cardNumber: "",
+    codeType: "",
+    notes: "",
+  };
+}
 
 export default function CardDisplay({
   card,
@@ -31,7 +33,7 @@ export default function CardDisplay({
   const [isLoading, setIsLoading] = useState(false);
   const [showScan, setShowScan] = useState(false);
   const [editedCard, setEditedCard] = useState<Card | Partial<Card>>({
-    ...cardTemplate,
+    ...generateCardObject(),
     ...card,
   });
   const db = useRef<StorageService>(null);
@@ -42,6 +44,8 @@ export default function CardDisplay({
     db.current = new StorageService();
     html5QrCode.current = new Html5Qrcode("scan-element", true);
   }, []);
+
+  console.log("Card: ", card);
 
   const handleScannerResult = (decodedText: string, format: string) => {
     handleInputChange("cardNumber", decodedText);
@@ -100,11 +104,16 @@ export default function CardDisplay({
       return window.alert("Please enter store name, card number and code type");
     }
 
-    if (!card.cardNumber) {
-      await db.current!.addCard(editedCard as Card);
+    console.log("card", card);
+    console.log("editedCard", editedCard);
+    
+    if (card.cardNumber) {
+      console.log("Updating card", card);
     } else {
-      await db.current!.updateCard(editedCard as Card);
+      console.log("Adding new card", card);
     }
+
+    await db.current!.setCard(editedCard as Card);
 
     setIsEditing(false);
     close();
@@ -121,7 +130,12 @@ export default function CardDisplay({
   const handleDeleteCard = async () => {
     if (!editedCard.cardNumber) return;
     if (window.confirm("Are you sure you want to delete this card?")) {
-      await db.current!.deleteCard(editedCard.cardNumber);
+      try {
+        await db.current!.deleteCard(editedCard as Card);
+        alert("Card deleted successfully");
+      } catch (error) {
+        console.error('Failed to delete card:', error);
+      }
       close();
     }
   };
@@ -306,7 +320,7 @@ export default function CardDisplay({
             disabled={isLoading}
           >
             {isLoading ? (
-              <AiOutlineLoading3Quarters className="h-6 w-6 text-gray-500 animate-spin" />
+              <AiOutlineLoading3Quarters className="h-6 w-6 not-dark:text-gray-500 animate-spin" />
             ) : (
               // <CiCirclePlus className="h-6 w-6 text-gray-500" />
               <CiCamera className="h-6 w-6 not-dark:text-gray-500" />
@@ -314,7 +328,7 @@ export default function CardDisplay({
           </button>
           <div
             ref={scanMenu}
-            className="absolute origin-top-right z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
+            className="absolute origin-top-right z-10 mt-2 w-56 divide-y divide-gray-100 rounded-md bg-(--background) dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"
@@ -349,7 +363,7 @@ export default function CardDisplay({
           </div>
         </div>
       </div>
-      <div className="flex justify-center items-center rounded-4xl not-dark:bg-gray-200 dark:bg-gray-600 px-4 py-2">
+      <div className="flex justify-center items-center rounded-4xl not-dark:bg-gray-200 dark:bg-gray-800 px-4 py-2">
         <select
           className="text-center outline-none"
           value={editedCard.codeType}
