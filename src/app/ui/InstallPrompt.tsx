@@ -1,6 +1,8 @@
 import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { FiPlusSquare, FiShare } from "react-icons/fi";
+import { MdAddToHomeScreen } from "react-icons/md";
+import { PiDotsThreeVerticalBold } from "react-icons/pi";
 
 const COOKIE_NAME = "install_prompt_confirmed";
 const PROMPT_DELAY = 2000;
@@ -60,11 +62,25 @@ function InstallPrompt() {
     </div>
   );
 
+  const messageForAndroid = (
+    <div className="space-y-6 w-full px-6">
+      <p className="text-lg">To install this app on your Android device:</p>
+      <div className="flex w-full items-center">
+        <p className="flex-1">1. Go to settings</p>
+        <PiDotsThreeVerticalBold className="w-7 h-7" />
+      </div>
+      <div className="flex w-full items-center">
+        <p className="flex-1">2. Click on &quot;Add to Home Screen&quot;</p>
+        <MdAddToHomeScreen className="w-7 h-7" />
+      </div>
+    </div>
+  );
+
   const messageForDevice =
     device === "ios" ? (
       messageForIos
     ) : device === "android" ? (
-      <p className="text-lg">Coming soon!</p>
+      messageForAndroid
     ) : (
       <></>
     );

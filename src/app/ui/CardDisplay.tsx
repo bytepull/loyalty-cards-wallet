@@ -2,9 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Card, StorageService } from "@/app/lib/storage-services";
-import Barcode from "react-barcode";
 import Scanner from "@/app/ui/Scanner";
-import { QRCodeSVG } from "qrcode.react";
+import BwipJs from "bwip-js/browser"; // https://www.npmjs.com/package/bwip-js
 import { IoCheckmark, IoCloseOutline } from "react-icons/io5";
 import { FiEdit3 } from "react-icons/fi";
 import { CiBarcode, CiCamera, CiImageOn, CiTrash } from "react-icons/ci";
@@ -106,7 +105,7 @@ export default function CardDisplay({
 
     console.log("card", card);
     console.log("editedCard", editedCard);
-    
+
     if (card.cardNumber) {
       console.log("Updating card", card);
     } else {
@@ -134,7 +133,7 @@ export default function CardDisplay({
         await db.current!.deleteCard(editedCard as Card);
         alert("Card deleted successfully");
       } catch (error) {
-        console.error('Failed to delete card:', error);
+        console.error("Failed to delete card:", error);
       }
       close();
     }
@@ -169,138 +168,173 @@ export default function CardDisplay({
     // If card number is not provided, return no code
     if (!editedCard.cardNumber || !editedCard.codeType) return nocode;
 
-    if (editedCard.codeType.toLowerCase().includes("qr"))
+    const codeformat = editedCard.codeType
+      .toLocaleLowerCase()
+      .replace(/[_-]/g, "");
+    console.log("Code format: ", codeformat);
+
+    if (codeformat) {
       return (
-        <div className="flex flex-col justify-center items-center">
-          <QRCodeSVG value={editedCard.cardNumber} />
-          <div className="mt-4">{editedCard.cardNumber}</div>
+        <div className="flex flex-col justify-center items-center max-w-full">
+          <canvas
+            className="max-w-full"
+            ref={(canvas) => {
+              if (!canvas) {
+                return;
+              }
+
+              BwipJs.toCanvas(canvas, {
+                bcid: codeformat, // Barcode type
+                text: editedCard.cardNumber as string, // Text to encode
+                scale: window.devicePixelRatio, // Scaling factor for high-DPI devices
+                // height: 20, // Bar height, in millimeters
+                includetext: true, // Show human-readable text
+                textxalign: "center", // Always good to set this
+                textfont: "monospace", // Human-readable font
+                // width: 50, // Bar width, in millimeters
+                alttext: editedCard.cardNumber as string, // Alternate text
+                // textsize: 12, // Human-readable font size, in points
+                // textthickness: 3, // Human-readable font thickness, in millimeters
+              });
+            }}
+          />
+          {/* <div className="mt-4">{editedCard.cardNumber}</div> */}
         </div>
       );
+    }
 
-    const codeformat = [
-      "CODE39",
-      "CODE128",
-      "CODE128A",
-      "CODE128B",
-      "CODE128C",
-      "EAN13",
-      "EAN8",
-      "EAN5",
-      "EAN2",
-      "UPC",
-      "UPCE",
-      "ITF14",
-      "ITF",
-      "MSI",
-      "MSI10",
-      "MSI11",
-      "MSI1010",
-      "MSI1110",
-      "pharmacode",
-      "codabar",
-      "GenericBarcode",
-    ];
+    // if (editedCard.codeType.toLowerCase().includes("qr")) {
+    //   return (
+    //     <div className="flex flex-col justify-center items-center">
+    //       <QRCodeSVG value={editedCard.cardNumber} />
+    //       <div className="mt-4">{editedCard.cardNumber}</div>
+    //     </div>
+    //   );
+    // }
+    // const codeformat = [
+    //   "CODE39",
+    //   "CODE128",
+    //   "CODE128A",
+    //   "CODE128B",
+    //   "CODE128C",
+    //   "EAN13",
+    //   "EAN8",
+    //   "EAN5",
+    //   "EAN2",
+    //   "UPC",
+    //   "UPCE",
+    //   "ITF14",
+    //   "ITF",
+    //   "MSI",
+    //   "MSI10",
+    //   "MSI11",
+    //   "MSI1010",
+    //   "MSI1110",
+    //   "pharmacode",
+    //   "codabar",
+    //   "GenericBarcode",
+    // ];
 
-    const formatMatches = codeformat.map((format) => {
-      const normalizedFormat = format.toUpperCase();
-      const normalizedInput = (editedCard as Card).codeType
-        .replace(/_/g, "")
-        .toUpperCase();
+    // const formatMatches = codeformat.map((format) => {
+    //   const normalizedFormat = format.toUpperCase();
+    //   const normalizedInput = (editedCard as Card).codeType
+    //     .replace(/_/g, "")
+    //     .toUpperCase();
 
-      // Calculate similarity using Levenshtein distance
-      function levenshteinDistance(a: string, b: string) {
-        if (a.length === 0) return b.length;
-        if (b.length === 0) return a.length;
+    //   // Calculate similarity using Levenshtein distance
+    //   function levenshteinDistance(a: string, b: string) {
+    //     if (a.length === 0) return b.length;
+    //     if (b.length === 0) return a.length;
 
-        const matrix = [];
+    //     const matrix = [];
 
-        for (let i = 0; i <= b.length; i++) {
-          matrix[i] = [i];
-        }
+    //     for (let i = 0; i <= b.length; i++) {
+    //       matrix[i] = [i];
+    //     }
 
-        for (let j = 0; j <= a.length; j++) {
-          matrix[0][j] = j;
-        }
+    //     for (let j = 0; j <= a.length; j++) {
+    //       matrix[0][j] = j;
+    //     }
 
-        for (let i = 1; i <= b.length; i++) {
-          for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-              matrix[i][j] = matrix[i - 1][j - 1];
-            } else {
-              matrix[i][j] = Math.min(
-                matrix[i - 1][j - 1] + 1,
-                matrix[i][j - 1] + 1,
-                matrix[i - 1][j] + 1
-              );
-            }
-          }
-        }
+    //     for (let i = 1; i <= b.length; i++) {
+    //       for (let j = 1; j <= a.length; j++) {
+    //         if (b.charAt(i - 1) === a.charAt(j - 1)) {
+    //           matrix[i][j] = matrix[i - 1][j - 1];
+    //         } else {
+    //           matrix[i][j] = Math.min(
+    //             matrix[i - 1][j - 1] + 1,
+    //             matrix[i][j - 1] + 1,
+    //             matrix[i - 1][j] + 1
+    //           );
+    //         }
+    //       }
+    //     }
 
-        return matrix[b.length][a.length];
-      }
+    //     return matrix[b.length][a.length];
+    //   }
 
-      // Calculate similarity percentage
-      const maxLength = Math.max(
-        normalizedFormat.length,
-        normalizedInput.length
-      );
-      const distance = levenshteinDistance(normalizedFormat, normalizedInput);
-      const similarity = ((maxLength - distance) / maxLength) * 100;
+    //   // Calculate similarity percentage
+    //   const maxLength = Math.max(
+    //     normalizedFormat.length,
+    //     normalizedInput.length
+    //   );
+    //   const distance = levenshteinDistance(normalizedFormat, normalizedInput);
+    //   const similarity = ((maxLength - distance) / maxLength) * 100;
 
-      return {
-        format,
-        similarity,
-      };
-    });
+    //   return {
+    //     format,
+    //     similarity,
+    //   };
+    // });
 
-    // Sort by similarity and filter those above 70%
-    const sortedMatches = formatMatches
-      .sort((a, b) => b.similarity - a.similarity)
-      .filter((match) => match.similarity >= 70);
+    // // Sort by similarity and filter those above 70%
+    // const sortedMatches = formatMatches
+    //   .sort((a, b) => b.similarity - a.similarity)
+    //   .filter((match) => match.similarity >= 70);
 
-    const matchingFormats = sortedMatches.map((match) => match.format);
-    const bestMatch = sortedMatches.length > 0 ? sortedMatches[0].format : null;
+    // const matchingFormats = sortedMatches.map((match) => match.format);
+    // const bestMatch = sortedMatches.length > 0 ? sortedMatches[0].format : null;
 
-    const matchPercentage =
-      sortedMatches.length > 0 ? sortedMatches[0].similarity : 0;
+    // const matchPercentage =
+    //   sortedMatches.length > 0 ? sortedMatches[0].similarity : 0;
 
-    console.log(`Matching formats:`, matchingFormats);
-    console.log(`Match percentage: ${matchPercentage.toFixed(2)}%`);
-    console.log(`Best match: ${bestMatch}`);
-    console.log(editedCard.codeType);
+    // console.log(`Matching formats:`, matchingFormats);
+    // console.log(`Match percentage: ${matchPercentage.toFixed(2)}%`);
+    // console.log(`Best match: ${bestMatch}`);
+    // console.log(editedCard.codeType);
 
-    // If card number is not provided, return no code
-    if (!bestMatch) return nocode;
+    // // If card number is not provided, return no code
+    // if (!bestMatch) return nocode;
 
-    return (
-      <Barcode
-        value={editedCard.cardNumber}
-        format={
-          bestMatch as
-            | "CODE39"
-            | "CODE128"
-            | "CODE128A"
-            | "CODE128B"
-            | "CODE128C"
-            | "EAN13"
-            | "EAN8"
-            | "EAN5"
-            | "EAN2"
-            | "UPC"
-            | "UPCE"
-            | "ITF14"
-            | "ITF"
-            | "MSI"
-            | "MSI10"
-            | "MSI11"
-            | "MSI1010"
-            | "MSI1110"
-            | "pharmacode"
-            | "codabar"
-            | "GenericBarcode"
-        }
-      />
-    );
+    // return (
+    //   <Barcode
+    //     value={editedCard.cardNumber}
+    //     format={
+    //       bestMatch as
+    //         | "CODE39"
+    //         | "CODE128"
+    //         | "CODE128A"
+    //         | "CODE128B"
+    //         | "CODE128C"
+    //         | "EAN13"
+    //         | "EAN8"
+    //         | "EAN5"
+    //         | "EAN2"
+    //         | "UPC"
+    //         | "UPCE"
+    //         | "ITF14"
+    //         | "ITF"
+    //         | "MSI"
+    //         | "MSI10"
+    //         | "MSI11"
+    //         | "MSI1010"
+    //         | "MSI1110"
+    //         | "pharmacode"
+    //         | "codabar"
+    //         | "GenericBarcode"
+    //     }
+    //   />
+    // );
   };
 
   const editCode = (
