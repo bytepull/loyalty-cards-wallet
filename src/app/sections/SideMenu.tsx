@@ -43,7 +43,7 @@ function SideMenu({ actions, states }: SideMenuProps): React.JSX.Element {
       aria-orientation="vertical"
       aria-labelledby="menu-button"
       tabIndex={-1}
-      className={`fixed top-0 letf-0 flex h-screen flex-col justify-between border-e border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-800 transition-transform duration-1000 transform ${
+      className={`fixed top-0 letf-0 z-50 flex h-screen flex-col justify-between border-e border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-800 transition-transform duration-1000 transform ${
         states.stateOfMenu ? "translate-x-0" : "-translate-x-full"
       }`}
     >
