@@ -2,13 +2,14 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Card, StorageService } from "@/app/lib/storage-services";
-import Scanner from "@/app/ui/Scanner";
+import Scanner from "@/app/sections/Scanner";
 import BwipJs from "bwip-js/browser"; // https://www.npmjs.com/package/bwip-js
 import { IoCheckmark, IoChevronBack } from "react-icons/io5";
 import { FiEdit3 } from "react-icons/fi";
 import { CiBarcode, CiImageOn, CiTrash, CiEdit } from "react-icons/ci";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { IoIosArrowBack } from "react-icons/io";
+import Navbar from "../components/Navbar";
 
 function generateCardObject(): Card {
   return {
@@ -258,21 +259,24 @@ export default function CardDisplay({
   );
 
   const navBarComponent = (
-    <nav className="sticky top-0 flex justify-between items-center w-full p-8 mb-6 bg-white dark:bg-gray-900 shadow space-x-8">
+    <Navbar>
       {/* Back Button */}
       <button onClick={handleClose}>
         <IoChevronBack className="size-6 not-dark:text-gray-600" />
       </button>
 
       {/* Edit / Confirm button */}
-      <button onClick={isEditing ? handleSave : () => setIsEditing(true)}>
+      <button
+        className="ml-auto"
+        onClick={isEditing ? handleSave : () => setIsEditing(true)}
+      >
         {isEditing ? (
           <IoCheckmark className="h-5 w-5 not-dark:text-gray-600" />
         ) : (
           <FiEdit3 className="h-5 w-5 not-dark:text-gray-600" />
         )}
       </button>
-    </nav>
+    </Navbar>
   );
 
   const cardComponent = (

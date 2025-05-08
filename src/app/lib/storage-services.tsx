@@ -152,15 +152,10 @@ export class StorageService {
   }
 
   public async clearDB(callbackFn?: () => void) {
-    const confirmClear = window.confirm(
-      "Are you sure you want to clear all cards?"
-    );
-    if (confirmClear) {
-      const db = await this.db;
-      await db.clear(STORE_NAME);
-      window.alert("All cards have been cleared");
-      if (callbackFn) callbackFn();
-    }
+    const db = await this.db;
+    await db.clear(STORE_NAME);
+    window.alert("All cards have been cleared");
+    if (callbackFn) callbackFn();
   }
 
   public async exportCards() {
