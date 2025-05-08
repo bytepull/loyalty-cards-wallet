@@ -85,6 +85,11 @@ export default function App() {
     };
   };
 
+  const handleDisplayCardClose = () => {
+    setShowCard(null);
+    setSearchQuery("");
+  };
+
   const sortCards = () => {
     const newSorting = (sorting + 1) % 3;
     console.log(newSorting);
@@ -381,7 +386,7 @@ export default function App() {
   if (showInfo) return info;
 
   if (showCard) {
-    return <CardDisplay card={showCard} close={() => setShowCard(null)} />;
+    return <CardDisplay card={showCard} close={handleDisplayCardClose} />;
   } else {
     return main;
   }
