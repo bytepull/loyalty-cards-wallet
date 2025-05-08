@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f3f4f6;
   --foreground: #171717;
 }
 
@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1e2939;
+    --foreground: #f3f4f6;
   }
 }
 
@@ -27,7 +27,19 @@ body {
 
 /* Safe area padding for iPhone with dynamic island */
 @supports (padding: env(safe-area-inset-top)) {
-  .app {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  .safe-area {
     padding-top: max(1rem, env(safe-area-inset-top));
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     padding-left: max(1rem, env(safe-area-inset-left));

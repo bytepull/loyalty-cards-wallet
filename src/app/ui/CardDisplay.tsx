@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Card, StorageService } from "@/app/lib/storage-services";
 import Scanner from "@/app/ui/Scanner";
 import BwipJs from "bwip-js/browser"; // https://www.npmjs.com/package/bwip-js
-import { IoCheckmark, IoCloseOutline } from "react-icons/io5";
+import { IoCheckmark, IoChevronBack } from "react-icons/io5";
 import { FiEdit3 } from "react-icons/fi";
 import { CiBarcode, CiImageOn, CiTrash, CiEdit } from "react-icons/ci";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
@@ -153,37 +153,29 @@ export default function CardDisplay({
     const codeformat = editedCard.codeType
       .toLocaleLowerCase()
       .replace(/[_-]/g, "");
+
     console.log("Code format: ", codeformat);
 
-    if (codeformat) {
-      return (
-        <div className="flex flex-col justify-center items-center max-w-ful">
-          <canvas
-            className="max-w-full bg-white p-2"
-            ref={(canvas) => {
-              if (!canvas) {
-                return;
-              }
+    return (
+      <div className="flex flex-col justify-center items-center max-w-full h-32">
+        <canvas
+          className="max-w-full h-32 bg-white p-2"
+          ref={(canvas) => {
+            if (!canvas) {
+              return;
+            }
 
-              BwipJs.toCanvas(canvas, {
-                bcid: codeformat, // Barcode type
-                text: editedCard.cardNumber as string, // Text to encode
-                scale: window.devicePixelRatio, // Scaling factor for high-DPI devices
-                includetext: false, // Show human-readable text
-              });
-            }}
-          />
-          <div className="mt-4">{editedCard.cardNumber}</div>
-          <button
-            onClick={handleDeleteCard}
-            className="rounded-4xl p-4 mt-14 bg-red-300"
-            disabled={!card.hasOwnProperty("cardNumber")}
-          >
-            <CiTrash className="size-6 text-gray-800 dark:text-black" />
-          </button>
-        </div>
-      );
-    }
+            BwipJs.toCanvas(canvas, {
+              bcid: codeformat, // Barcode type
+              text: editedCard.cardNumber as string, // Text to encode
+              scale: window.devicePixelRatio, // Scaling factor for high-DPI devices
+              includetext: false, // Show human-readable text
+            });
+          }}
+        />
+        <div className="mt-4">{editedCard.cardNumber}</div>
+      </div>
+    );
   };
 
   const manualInput = (
@@ -228,11 +220,11 @@ export default function CardDisplay({
     </>
   );
 
-  const addChoices = (
+  const addCardMethods = (
     <>
       {/* Scan with Camera button */}
       <button
-        className="flex items-center w-full px-6 py-4 rounded-4xl dark:bg-gray-800 bg-blue-100 not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
+        className="flex items-center w-full px-6 py-4 rounded-md dark:bg-gray-600 bg-blue-100 not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900 shadow"
         onClick={() => setShowScan(true)}
       >
         <p className="mr-4">Scan with Camera</p>
@@ -241,7 +233,7 @@ export default function CardDisplay({
 
       {/* Import from Photo button */}
       <button
-        className="flex items-center w-full px-6 py-4 rounded-4xl dark:bg-gray-800 bg-blue-100  not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
+        className="flex items-center w-full px-6 py-4 rounded-md dark:bg-gray-600 bg-blue-100  not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900 shadow"
         onClick={openPhotoLibrary}
       >
         <p className="mr-4">Import from Photo</p>
@@ -250,7 +242,7 @@ export default function CardDisplay({
 
       {/* Add Manually */}
       <button
-        className="flex items-center w-full px-6 py-4 rounded-4xl dark:bg-gray-800 bg-blue-100  not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900"
+        className="flex items-center w-full px-6 py-4 rounded-md dark:bg-gray-600 bg-blue-100  not-dark:text-gray-700 not-dark:hover:bg-slate-200 not-dark:hover:text-gray-900 shadow"
         onClick={() => setIsManualInsert(true)}
       >
         <p className="mr-4">Add Manually</p>
@@ -261,52 +253,53 @@ export default function CardDisplay({
 
   const editCode = (
     <div className="flex flex-col justify-center items-center space-y-6">
-      {isManualInsert ? manualInput : addChoices}
+      {isManualInsert ? manualInput : addCardMethods}
     </div>
   );
 
-  if (showScan) return <Scanner close={handleScannerResult} />;
+  const navBarComponent = (
+    <nav className="sticky top-0 flex justify-between items-center w-full p-8 mb-6 bg-white dark:bg-gray-900 shadow space-x-8">
+      {/* Back Button */}
+      <button onClick={handleClose}>
+        <IoChevronBack className="size-6 not-dark:text-gray-600" />
+      </button>
 
-  return (
-    <div className="flex flex-col h-full w-full p-6">
-      <div className="flex justify-between items-center">
-        {/* Close Button */}
-        <button onClick={handleClose}>
-          <IoCloseOutline className="size-6 not-dark:text-gray-600" />
-        </button>
-        {/* Edit / Confirm button */}
-        <button onClick={isEditing ? handleSave : () => setIsEditing(true)}>
-          {isEditing ? (
-            <IoCheckmark className="h-5 w-5 not-dark:text-gray-600" />
-          ) : (
-            <FiEdit3 className="h-5 w-5 not-dark:text-gray-600" />
-          )}
-        </button>
-      </div>
+      {/* Edit / Confirm button */}
+      <button onClick={isEditing ? handleSave : () => setIsEditing(true)}>
+        {isEditing ? (
+          <IoCheckmark className="h-5 w-5 not-dark:text-gray-600" />
+        ) : (
+          <FiEdit3 className="h-5 w-5 not-dark:text-gray-600" />
+        )}
+      </button>
+    </nav>
+  );
 
+  const cardComponent = (
+    <div className="space-y-8 m-8 p-8 bg-white dark:bg-gray-700 rounded-lg not-dark:border border-slate-200 shadow-md">
       {/* Store Name */}
-      <div className="flex justify-center items-center mt-12">
+      <div className="flex justify-center items-center">
         <input
           type="text"
+          placeholder="Store Name"
+          readOnly={!isEditing}
+          value={editedCard.storeName}
+          onChange={(e) => handleInputChange("storeName", e.target.value)}
           className={`text-xl font-semibold text-center outline-none capitalize ${
             isEditing
               ? "border-b not-dark:border-slate-200 italic not-dark:text-gray-400"
               : "not-dark:text-gray-800"
           }`}
-          value={editedCard.storeName}
-          onChange={(e) => handleInputChange("storeName", e.target.value)}
-          placeholder="Store Name"
-          readOnly={!isEditing}
         />
       </div>
 
       {/* Barcode */}
-      <div className="flex flex-col flex-1 justify-center items-center">
+      <div className="flex flex-col justify-center items-center">
         {isEditing ? editCode : code()}
       </div>
 
       {/* Notes */}
-      <div className="flex justify-center items-center mb-12">
+      <div className="flex justify-center items-center">
         <input
           type="text"
           className={`text-center outline-none ${
@@ -320,6 +313,35 @@ export default function CardDisplay({
           placeholder="Notes"
         />
       </div>
+    </div>
+  );
+
+  const deleteButton = (
+    <div className="w-full flex items-center justify-center mt-14">
+      <button
+        onClick={handleDeleteCard}
+        className="w-fit rounded-4xl p-4 bg-red-300"
+        disabled={!card.hasOwnProperty("cardNumber")}
+      >
+        <CiTrash className="size-8 text-gray-800 dark:text-black" />
+      </button>
+    </div>
+  );
+
+  if (showScan) return <Scanner close={handleScannerResult} />;
+
+  return (
+    <div className="flex flex-col h-full w-full">
+      {/* Nav Bar */}
+      {navBarComponent}
+
+      {/* Card */}
+      {cardComponent}
+
+      {/* Delete button */}
+      {deleteButton}
+
+      {/* Code Scanner */}
       <div id="scan-element" className="hidden"></div>
     </div>
   );

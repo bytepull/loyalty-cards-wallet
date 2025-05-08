@@ -10,15 +10,14 @@ import {
   CiCircleInfo,
   CiExport,
   CiImport,
-  CiSearch,
   CiTrash,
-  CiSettings,
+  CiMenuBurger,
 } from "react-icons/ci";
 import { FaCircle } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 import { MdOutlineSortByAlpha } from "react-icons/md";
 import { BsSortAlphaDown, BsSortAlphaUp } from "react-icons/bs";
-import { IoCloseOutline } from "react-icons/io5";
+import { IoCloseOutline, IoSearchOutline } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const defaultSortingIcon = <MdOutlineSortByAlpha className="h-6 w-6" />;
@@ -90,7 +89,7 @@ export default function App() {
     setSearchQuery("");
   };
 
-  const sortCards = () => {
+  const handleSortCards = () => {
     const newSorting = (sorting + 1) % 3;
     console.log(newSorting);
 
@@ -121,7 +120,7 @@ export default function App() {
     setSorting(newSorting);
   };
 
-  const searchCards = (query: string) => {
+  const handleSearchCards = (query: string) => {
     setSearchQuery(query);
     if (query.length === 0) {
       setCards(bkCards);
@@ -133,9 +132,9 @@ export default function App() {
     setCards(filteredCards);
   };
 
-  const loading = (
+  const loadingComponent = (
     <div className="flex w-full h-full items-center justify-center">
-      <AiOutlineLoading3Quarters className="h-28 w-28 text-gray-500 animate-spin" />
+      <AiOutlineLoading3Quarters className="h-28 w-28 animate-spin" />
     </div>
   );
 
@@ -241,23 +240,50 @@ export default function App() {
     </div>
   );
 
+  const searchBar = (
+    <div className="flex space-x-2 w-full bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-50 rounded-4xl">
+      <div className="px-3 py-2 rounded-4xl ">
+        <IoSearchOutline className="h-5 w-5" />
+      </div>
+      <input
+        ref={serchBarElement}
+        type="text"
+        className="w-full py-2 rounded-4xl focus:outline-none focus:border-blue-500  placeholder:text-gray-400"
+        placeholder="Search"
+        onChange={(e) => handleSearchCards(e.target.value)}
+        value={searchQuery}
+      />
+      <button
+        type="button"
+        className="pr-3 rounded-4xl"
+        onClick={() => {
+          if (searchQuery.length > 0) handleSearchCards("");
+        }}
+      >
+        {searchQuery.length > 0 ? (
+          <IoCloseOutline className="h-5 w-5" />
+        ) : null}
+      </button>
+    </div>
+  );
+
   const main = (
     <>
       <InstallPrompt />
-      <div className="flex flex-col w-full h-full">
+      <div className="flex flex-col w-full h-full dark:bg-gray-800">
         {/* Menu bar */}
-        <nav className="flex w-full p-3 mb-6">
+        <nav className="flex items-center w-full p-6 mb-6 bg-white dark:bg-gray-900 shadow space-x-8">
           {/* Settings */}
           {/* https://tailwindccom/plus/ui-blocks/application-ui/elements/dropdowns */}
-          <div className="mr-auto relative">
+          <div className="relative flex">
             <button
               type="button"
-              className="mr-auto relative"
+              className="mr-auto"
               onClick={() => {
                 settingsMenuElement.current?.classList.toggle("hidden");
               }}
             >
-              <CiSettings className="h-6 w-6" />
+              <CiMenuBurger className="h-6 w-6" />
             </button>
             <div
               ref={settingsMenuElement}
@@ -327,54 +353,30 @@ export default function App() {
             </div>
           </div>
 
+          {/* Search bar */}
+          {searchBar}
+
           {/* Sort */}
-          <button onClick={sortCards}>{sortingIcon}</button>
+          <button onClick={handleSortCards}>{sortingIcon}</button>
 
           {/* Add cards */}
-          <div className="ml-6" onClick={() => setShowCard({})}>
+          <div className="" onClick={() => setShowCard({})}>
             <FiPlus className="h-6 w-6" />
           </div>
         </nav>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-center mb-6">
+        {/* <h1 className="text-2xl font-bold text-center mb-6">
           Simple Loyalty Cards Wallet
-        </h1>
+        </h1> */}
 
-        {/* Search bar */}
-        <div className="w-full mb-6">
-          <div className="relative w-full px-4">
-            <div className="relative">
-              <input
-                ref={serchBarElement}
-                type="text"
-                className="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 bg-slate-100 text-gray-600 placeholder:text-gray-600"
-                placeholder="Search cards..."
-                onChange={(e) => searchCards(e.target.value)}
-                value={searchQuery}
-              />
-              <button
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => {
-                  if (searchQuery.length > 0) searchCards("");
-                }}
-              >
-                {searchQuery.length > 0 ? (
-                  <IoCloseOutline className="h-5 w-5 text-gray-600" />
-                ) : (
-                  <CiSearch className="h-5 w-5 text-gray-600" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
         {/* Cards */}
         <div className="text-center italic text-slate-400">
           {cards.length} cards
         </div>
-        <div className="flex-1 overflow-auto m-4">
+        <div className="flex-1 overflow-auto m-8">
           {isLoading ? (
-            loading
+            loadingComponent
           ) : (
             <CardList cards={cards} showCard={setShowCard} />
           )}
@@ -387,7 +389,7 @@ export default function App() {
 
   if (showCard) {
     return <CardDisplay card={showCard} close={handleDisplayCardClose} />;
-  } else {
-    return main;
   }
+    
+  return main;
 }
